@@ -1,0 +1,126 @@
+---
+title: "Forest"
+output: 
+  html_document: 
+    theme: journal
+---
+
+This information was collected on October 2015 in Amalfi, Antioquia (Colombia) by a group of students of Forest engineering of the Universidad Nacional de Colombia. Luisa Fernanda  Gomez, Catalina Zapata, Jonathan Mafla, Juan Pablo Gonzalez and David Triviño, we made some plots in a secundary forest, near road to Amalfi. This an information for the Forest ecology report. 
+
+## Reading data
+
+
+```{r, echo=FALSE}
+setwd("C:/Users/David Esteban/Google Drive/Materias cursadas/Ecología Forestal/Informe de la salida/Datos en R")
+```
+
+
+```{r}
+datos<-read.csv2("datos.csv")
+resumidos<-read.csv2("datos_clase.csv")
+biomasa<-read.csv2("Biomasa.csv")
+regresion<-read.csv2("Regresión.csv")
+```
+
+## Heads of data
+```{r}
+head(datos)
+head(resumidos)
+head(biomasa)
+head(regresion)
+```
+
+## Plot 
+```{r}
+with(regresion, plot(b_anh, xlab="Plots", ylab="Aboveground biomass"))
+```
+
+## Linear regression
+```{r}
+mod.lin<-lm(b_anh~n,regresion)
+summary(mod.lin)
+```
+
+
+## Vegetation biomass
+
+```{r}
+{op <- par(mar = c(5,4.5,4,2) + 0.1)
+with(biomasa, plot(AB.ha,Herbacea.ha,xlab=expression("Basal area"~(m^{2}~ha^{-1})),
+                   ylab=expression("Vegetation biomass"~(Mg~ha^{-1})),ylim=c(0.2,0.4)))
+par(new=T)
+AB=seq(19,45,0.1)
+VH<-function(AB){
+        Vh=100.235*exp(-4.009^(AB^0.069))}
+Vh<-VH(AB)
+plot(Vh~AB,type="l",xlab="",ylab="",main="",col="blue",axes=F,ylim=c(0.2,0.4))
+}
+```
+
+## Leaf litter
+
+```{r}
+Hoja<-function(AB){
+        hoja=1.112*log(1+6.184*AB)
+}
+hoja<-Hoja(AB)
+
+
+{ op <- par(mar = c(5,4.5,4,2) + 0.1)
+  with(biomasa,plot(AB.ha,Hojarasca.ha,xlab=expression("Basal area"~(m^{2}~ha^{-1})),
+                  ylab=expression("Leaf litter"~(Mg~ha^{-1}))))
+par(new=T)
+plot(hoja~AB,type="l",xlab="",ylab="",main="",col="blue",axes=F,ylim=c(5.2,6.4))}
+```
+
+## Diametric classes
+
+```{r}
+clases<-as.character(resumidos$clase)
+clases=c("3","7,5","12,5","17,5","22,5","27,5","32,5","37,5","42,5","47,5","52,5","57,5")
+op <- par(mar = c(5,4.5,4,2) + 0.1)
+with(resumidos, barplot(Biomasa.ha,space=c(0,0),names.arg=clases,las=2,
+                        ylab=expression("Biomass"~(Mg~ha^{-1})),
+                        xlab=expression("Diametric classes"~(cm)), col="white"))
+```
+
+```{r}
+op <- par(mar = c(5,4.5,4,2) + 0.1)
+with(resumidos, barplot(AB.ha,space=c(0,0),names.arg=clases,las=2,
+                        ylab=expression("Área basal"~(m^{2}~ha^{-1})),
+                        xlab=expression("Clase diamétrica"~(cm)), col="white"))
+```
+
+
+```{r}
+lim.int=c(1,seq(5,60,5))
+{histograma<-hist(datos$DAP,breaks=lim.int,main="", ylab="Frecuencia", 
+                 xlab="Diámetro (cm)", probability=T)
+lines(density(datos$DAP),col="blue")
+mtext(c(-2,0,2), side=2, las=1, at=c(-2,0,2), line=0.3, col="blue", cex=0.1)}
+```
+
+
+## Vegetation and leaf litter
+
+```{r}
+{
+  op <- par(mar = c(5,4.5,4,2) + 0.1)
+  with(biomasa, plot(AB.ha,Herbacea.ha,xlab=expression("Área basal"~(m^{2}~ha^{-1})),
+ylab=expression("Biomasa"~(Mg~ha^{-1})),ylim=c(0,6.3),col="chartreuse4",pch=2))
+par(new=T)
+AB=seq(19,45,0.1)
+VH<-function(AB){
+        Vh=100.235*exp(-4.009^(AB^0.069))}
+Vh<-VH(AB)
+plot(Vh~AB,type="l",xlab="",ylab="",main="",col="chartreuse4",axes=F,ylim=c(0,6.3))
+par(new=T)
+plot(biomasa$AB.ha,biomasa$Hojarasca.ha,xlab="",ylim=c(0,6.3),
+                  ylab="",col="chocolate4",pch=10,axes=F)
+par(new=T)
+plot(hoja~AB,type="l",xlab="",ylab="",main="",col="chocolate4",axes=F,ylim=c(0,6.3))
+legend(40, 4, legend=c("Leaf litter", "Vegetation"), col = c("chocolate4", "chartreuse4"),
+       pch=c(10,2))
+}
+```
+
